@@ -34,13 +34,39 @@ let getLCSLength = (arr1, arr2) => {
     return m[arr1.length - 1][arr2.length - 1];
 };
 
+let getLCSSequence = (arr1, arr2) => {
+    let seq = [];
+
+    let m = createLCSMatrix(arr1, arr2);
+    let i = arr1.length - 1;
+    let j = arr2.length - 1;
+
+    while (i >= 0 && j >= 0) {
+        let curr = m[i][j];
+        let prev1 = i > 0 ? m[i - 1][j] : 0;
+        let prev2 = j > 0 ? m[i][j - 1] : 0;
+        if (curr === prev1) {
+            i--;
+        } else if (curr === prev2) {
+            j--;
+        } else {
+            seq.unshift(arr1[i]);   // add element at the beginning of the array
+            i--;
+            j--;
+        }
+    }
+    return seq;
+};
+
 
 // TESTING
 
-let arr1 = ['A', 'B', 'A', 'Z', 'D', 'C'];
-let arr2 = ['B', 'A', 'C', 'B', 'A', 'D'];
+let arr1 = ['B', 'C', 'A', 'Z', 'D', 'A'];
+let arr2 = ['B', 'A', 'C', 'B', 'A', 'D', 'A'];
 
 let matrix = createLCSMatrix(arr1, arr2);
 console.log(matrix);
 
 console.log(`LCS length is ${getLCSLength(arr1, arr2)}`);
+
+console.log(`LCS sequence is ${getLCSSequence(arr1, arr2)}`);
