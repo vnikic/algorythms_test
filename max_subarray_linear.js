@@ -1,15 +1,15 @@
-var findMaxSubarray = function(arr) {
-    var maxIndexFrom = -1;
-    var maxIndexTo = -1;
-    var maxSum = 0.0;
-    var maxEdgeFrom = -1;
-    var maxEdgeSum = 0.0;
+let findMaxSubarray = function(arr) {
+    let maxIndexFrom = -1;
+    let maxIndexTo = -1;
+    let maxSum = 0.0;
+    let maxEdgeFrom = -1;
+    let maxEdgeSum = 0.0;
     
-    for (var i = 0; i < arr.length; i++) {
-        var currEl = arr[i];
+    for (let i = 0; i < arr.length; i++) {
+        let currEl = arr[i];
         maxEdgeSum += currEl;
         if (currEl >= 0) {
-            if (maxEdgeFrom == -1) {
+            if (maxEdgeFrom === -1) {
                 maxEdgeFrom = i;
             }
             if (maxEdgeSum > maxSum) {
@@ -30,7 +30,8 @@ var findMaxSubarray = function(arr) {
         "to": maxIndexTo,
         "sum": maxSum
     }
-}
+};
+
 
 var array = [13,-3,-25,20,-3,-16,-23,18,20,-7,12,-5,-22,15,-4,7];
 // var array = [-2, 1,-3, 4, -1, 2, 1, -5, 4];
