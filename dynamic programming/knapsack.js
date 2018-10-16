@@ -9,7 +9,7 @@ You cannot break an item, either pick the complete item, or don’t pick it (0-1
 // items - array of items, all having size and value properties
 let findBestItemSet = (items, totalSize) => {
     // rows - items,
-    // columns - all possible knapsack sizes from 0 to totalSize, each
+    // columns - all possible knapsack sizes from 0 to totalSize
     // each cell (i, j) tells whether to include item i in the set and the best value for size j
     let matrix = [];
     let [maxValue, x, y]  = [0, 0, 0];      // keep track of the best possible value in the whole matrix, together with the row and column
