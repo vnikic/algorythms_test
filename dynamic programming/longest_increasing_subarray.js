@@ -1,20 +1,26 @@
+/*
+The Longest Increasing Subsequence (LIS) problem is to find the length of the longest subsequence of a given sequence
+such that all elements of the subsequence are sorted in increasing order. For example, the length of LIS for
+{10, 22, 9, 33, 21, 50, 41, 60, 80} is 6 and LIS is {10, 22, 33, 50, 60, 80}.
+ */
+
 function getRandomIntArray(len, min, max) {
-    var array = [];
-    for (var i = 0; i < len; i++) {
+    let array = [];
+    for (let i = 0; i < len; i++) {
         array[i] = Math.round(Math.random() * (max - min) + min);
     }
     return array;
 }
  
 function findMaxIncSubarray(array, compareFunc) {
-    var m = [];
-    for (var i = 0; i < array.length; i++) {
-        if (i == 0) {
+    let m = [];
+    for (let i = 0; i < array.length; i++) {
+        if (i === 0) {
             m[i] = {len: 1, prev: -1};
         } else {
-            var currMaxLen = -1;
-            var currMaxPrev = -1;
-            for (var j = 0; j < i; j++) {
+            let currMaxLen = -1;
+            let currMaxPrev = -1;
+            for (let j = 0; j < i; j++) {
                 if (compareFunc(array[i], array[j]) > 0) {
                     if (m[j].len + 1 > currMaxLen) {
                         currMaxLen = m[j].len + 1;
@@ -26,16 +32,16 @@ function findMaxIncSubarray(array, compareFunc) {
         }
     }
     
-    var lastIndex = -1;
-    var maxLen = -1;
-    for (var i = 0; i < m.length; i++) {
+    let lastIndex = -1;
+    let maxLen = -1;
+    for (let i = 0; i < m.length; i++) {
         if (m[i].len > maxLen) {
             maxLen = m[i].len;
             lastIndex = i;
         }
     }
     
-    var subarray = [];
+    let subarray = [];
     
     while (lastIndex >= 0) {
         subarray.unshift(array[lastIndex]);
@@ -48,13 +54,13 @@ function findMaxIncSubarray(array, compareFunc) {
 
 
 function incCompare(a, b) {
-    return a > b ? 1 : (a == b ? 0 : -1);
+    return a > b ? 1 : (a === b ? 0 : -1);
 }
 
 
-var array = getRandomIntArray(20, 1, 100);
+let array = getRandomIntArray(20, 1, 100);
 
-var maxSubarray = findMaxIncSubarray(array, incCompare);
+let maxSubarray = findMaxIncSubarray(array, incCompare);
 
 console.log(array);
 

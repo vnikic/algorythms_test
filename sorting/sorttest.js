@@ -1,6 +1,6 @@
 var common = require('./common.js');
 var bubbleSort = require('./bubblesort.js');
-var selectSort = require('./selectsort.js');
+var selectSort = require('./selectSort.js');
 var insertSort = require('./insertsort.js');
 var shellSort = require('./shellsort.js');
 var quickSort = require('./quicksort.js');
