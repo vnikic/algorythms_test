@@ -51,7 +51,7 @@ let memoize = (array, sum) => {
 };
 
 let findSubarrayForSum = (array, sum, table) => {
-    // first find first 1 in column sum
+    // first find first 2 in column sum
     for (let i = 0; i < array.length; i++) {
         if (table[i][sum] === 2) {
             let result = [];
@@ -75,10 +75,14 @@ let findSubarrayForSum = (array, sum, table) => {
 // TESTING
 
 let array = [3, 34, 4, 12, 5, 2];
+
+console.log("Recursion: ");
+console.log( naiveSolution(array, 56) );
+
+
+console.log("Dynamic programming: ");
+
 let maxSum = 100;
-
-console.log( naiveSolution(array, 10) );
-
 let table = memoize(array, maxSum);
 console.log(findSubarrayForSum(array, 8, table));
 console.log(findSubarrayForSum(array, 10, table));
