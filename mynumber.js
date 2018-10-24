@@ -17,6 +17,27 @@ let makeTrees = (nodeCount, path, nodes, initialNodeCount) => {
             makeTrees(rightToPush, path + "1", nodes.concat([path]), initialNodeCount);
         }
     }
-}
+};
 
-makeTrees(3, "", [], 3);
+
+let create = (n, nodes) => {
+    if (n > 0) {
+        for (let i = 0; i < nodes.length; i++) {
+            let nodeToAppend = nodes[i];
+            for (let j = 0; j <= 1; j++) {
+                let newNode = nodeToAppend + j;
+                if (nodes[nodes.length - 1] < newNode) {
+                    nodes.push(newNode);
+                    create(n - 1, nodes);
+                    nodes.pop();
+                }
+            }
+        }
+    } else {
+        console.log(nodes);
+    }
+};
+
+// makeTrees(3, "", [], 3);
+
+create(3, ["0"]);
