@@ -53,33 +53,32 @@ class OperatorNode extends CalcNode {
     }
 
     calc() {
+        let leftCalc = this.left.calc();
+        if (leftCalc === NaN) {
+            return NaN;
+        }
+        if (this.operator === OP_NONE && this.left) {
+            return leftCalc;
+        }
+
+        let rightCalc = this.right.calc();
+
+        if (rightCalc === NaN) {
+            return NaN;
+        }
+
         switch (this.operator) {
-            case OP_NONE:
-                if (this.left) {
-                    return this.left.calc();
-                }
-                break;
             case OP_PLUS:
-                if (this.left && this.right) {
-                    return this.left.calc() + this.right.calc();
-                }
-                break;
+                return leftCalc + rightCalc;
             case OP_MINUS:
-                if (this.left && this.right) {
-                    return this.left.calc() - this.right.calc();
-                }
-                break;
+                return leftCalc - rightCalc;
             case OP_MULT:
-                if (this.left && this.right) {
-                    return this.left.calc() * this.right.calc();
-                }
-                break;
+                return leftCalc * rightCalc;
             case OP_DIV:
-                if (this.left && this.right) {
-                    let x = this.right.calc();
-                    return x !== 0 ? this.left.calc() / x : NaN;
+                if (rightCalc != 0) {
+                    let div = leftCalc / rightCalc;
+                    return div % 1 === 0.0 ? div : NaN;
                 }
-                break;
         }
         return NaN;
     }
@@ -255,16 +254,14 @@ let getAllCalcTrees = () => {
 }
 
 
-let setOperations = (calcTree, ops) => {
-    let opNodes = getOperationNodes(calcTree);
+let setOperations = (opNodes, ops) => {
     for (let i = 0; i < Math.min(opNodes.length, ops.length); i++) {
         opNodes[i].setOperator(ops[i]);
     }
 };
 
 
-let setNumbers = (calcTree, numbers) => {
-    let numNodes = getNumberNodes(calcTree);
+let setNumbers = (numNodes, numbers) => {
     for (let i = 0; i < Math.min(numNodes.length, numbers.length); i++) {
         numNodes[i].setNumber(numbers[i]);
     }
@@ -342,8 +339,9 @@ let getAllNumberSequences = (numbers) => {
 
 // TESTING
 
-let nums = [5, 4, 7, 1, 15, 50];
-let result = 873;
+let nums = [2, 4, 7, 1, 15, 50];
+let result = 659;
+let count = 0;
 
 let calcTrees = getAllCalcTrees();
 let allOperationSequences = getAllOperationSequences();
@@ -351,21 +349,24 @@ let allNumberSequences = getAllNumberSequences(nums);
 
 let startTime = Date.now();
 
-// for (let i = 0; i < calcTrees.length; i++) {
-for (let i = 5; i < 10; i++) {
+for (let i = 0; i < calcTrees.length; i++) {
+// for (let i = 5; i < 10; i++) {
     let calcTree = calcTrees[i];
+    let opNodes = getOperationNodes(calcTree);
+    let numNodes = getNumberNodes(calcTree);
+
     for (let j = 0; j < allOperationSequences.length; j++) {
-        let opSeq = allOperationSequences[j];
+        setOperations(opNodes, allOperationSequences[j]);
         for (let k = 0; k < allNumberSequences.length; k++) {
             let numSeq = allNumberSequences[k];
-            setNumbers(calcTree, numSeq);
-            setOperations(calcTree, opSeq);
+            setNumbers(numNodes, numSeq);
             let currCalc = calcTree.calc();
             if (currCalc === result) {
-                console.log(`${calcTree.toString()} = ${currCalc}`);
+                count++;
+                // console.log(`${calcTree.toString()} = ${currCalc}`);
             }
         }
     }
 }
 
-console.log(`Calculation done in ${Date.now() - startTime}`);
+console.log(`Number of expressions found: ${count}. Calculation done in ${Date.now() - startTime}`);
