@@ -1,10 +1,11 @@
-let OPERATOR_NONE = 0;
-let OPERATOR_PLUS = 1;
-let OPERATOR_MINUS = 2;
-let OPERATOR_MULTIPLICATION = 3;
-let OPERATOR_DIVIDE = 4;
+let OP_NONE = 0;
+let OP_PLUS = 1;
+let OP_MINUS = 2;
+let OP_MULT = 3;
+let OP_DIV = 4;
 
-let ALL_OPERATORS = [OPERATOR_NONE, OPERATOR_PLUS, OPERATOR_MINUS, OPERATOR_MULTIPLICATION, OPERATOR_DIVIDE];
+let ALL_OPS = [OP_NONE, OP_PLUS, OP_MINUS, OP_MULT, OP_DIV];
+
 
 class CalcNode {
     constructor() {
@@ -32,37 +33,48 @@ class CalcNode {
         this.left = left;
         this.right = right;
     }
+
+    getPrecedence() {
+        return 0;
+    }
+
+    toString() {
+    }
 }
 
 
 class OperatorNode extends CalcNode {
+    constructor() {
+        super();
+    }
+
     setOperator(op) {
         this.operator = op;
     }
 
     calc() {
         switch (this.operator) {
-            case OPERATOR_NONE:
+            case OP_NONE:
                 if (this.left) {
                     return this.left.calc();
                 }
                 break;
-            case OPERATOR_PLUS:
+            case OP_PLUS:
                 if (this.left && this.right) {
                     return this.left.calc() + this.right.calc();
                 }
                 break;
-            case OPERATOR_MINUS:
+            case OP_MINUS:
                 if (this.left && this.right) {
                     return this.left.calc() - this.right.calc();
                 }
                 break;
-            case OPERATOR_MULTIPLICATION:
+            case OP_MULT:
                 if (this.left && this.right) {
                     return this.left.calc() * this.right.calc();
                 }
                 break;
-            case OPERATOR_DIVIDE:
+            case OP_DIV:
                 if (this.left && this.right) {
                     let x = this.right.calc();
                     return x !== 0 ? this.left.calc() / x : NaN;
@@ -70,6 +82,35 @@ class OperatorNode extends CalcNode {
                 break;
         }
         return NaN;
+    }
+
+    getPrecedence() {
+        switch (this.operator) {
+            case OP_PLUS, OP_MINUS: return 2;
+            case OP_MULT, OP_DIV: return 1;
+        }
+        return 0;
+    }
+
+    toString() {
+        let leftStr = this.left ? this.left.toString() : "y";
+        if (this.operator === OP_NONE) {
+            return leftStr;
+        }
+        let rightStr = this.right ? this.right.toString(): "y";
+        let opStr = "#";
+        switch (this.operator) {
+            case OP_PLUS: opStr = "+"; break;
+            case OP_MINUS: opStr = "-"; break;
+            case OP_MULT: opStr = "*"; break;
+            case OP_DIV: opStr = "/"; break;
+        }
+
+        let s = `(${leftStr} ${opStr} ${rightStr})`;
+        // if (this.getPrecedence() === 2) {
+        //     s = `(${s})`;
+        // }
+        return s;
     }
 }
 
@@ -100,6 +141,63 @@ class NumberNode extends CalcNode {
     calc() {
         return this.num ? this.num: NaN;
     }
+
+    toString() {
+        return this.num ? this.num : "x";
+    }
+}
+
+
+let getOperationNodes = (calcTree) => {
+    let collectOperationNodes = (calcTree, collectedNodes) => {
+        if (calcTree === null) {
+            return;
+        } else if (!calcTree.isLeaf()) {
+            collectOperationNodes(calcTree.left, collectedNodes);
+            collectedNodes.push(calcTree);
+            collectOperationNodes(calcTree.right, collectedNodes);
+        }
+    };
+
+    let opNodes = [];
+    collectOperationNodes(calcTree, opNodes);
+    return opNodes;
+}
+
+
+let getNumberNodes = (calcTree) => {
+    let collectNumberNodes = (calcTree, collectedNodes) => {
+        if (calcTree === null) {
+            return;
+        } else if (calcTree.isLeaf()) {
+            collectedNodes.push(calcTree);
+        } else {
+            collectNumberNodes(calcTree.left, collectedNodes);
+            collectNumberNodes(calcTree.right, collectedNodes);
+        }
+    };
+
+    let opNodes = [];
+    collectNumberNodes(calcTree, opNodes);
+    return opNodes;
+}
+
+
+let defineCalcTreeNumberPlaceholders = (calcTree) => {
+    if (calcTree === null) {
+        return;
+    } else if (!calcTree.isLeaf()) {
+        if (calcTree.left === null) {
+            calcTree.setLeft(new NumberNode(1));
+        } else {
+            defineCalcTreeNumberPlaceholders(calcTree.left);
+        }
+        if (calcTree.right === null) {
+            calcTree.setRight(new NumberNode(1));
+        } else {
+            defineCalcTreeNumberPlaceholders(calcTree.right);
+        }
+    }
 }
 
 
@@ -126,8 +224,10 @@ let createCalcTree = (nodes) => {
             }
         }
     }
+    defineCalcTreeNumberPlaceholders(rootNode);
     return rootNode;
 };
+
 
 let createCalcTrees = (n, nodes, calcTrees) => {
     if (n > 0) {
@@ -147,36 +247,125 @@ let createCalcTrees = (n, nodes, calcTrees) => {
     }
 };
 
-let addNumberToCalcTree = (calcTree, num) => {
-    let inserted  = false;
-    if (!calcTree.isLeaf() && calcTree.left === null) {
-        calcTree.setLeft(new NumberNode(num));
-        inserted  = true;
-    } else if (!calcTree.isLeaf() && calcTree.right === null) {
-        calcTree.setRight(new NumberNode(num));
-        inserted  = true;
+
+let getAllCalcTrees = () => {
+    let calcTrees = [];
+    createCalcTrees(4, [""], calcTrees);
+    return calcTrees;
+}
+
+
+let setOperations = (calcTree, ops) => {
+    let opNodes = getOperationNodes(calcTree);
+    for (let i = 0; i < Math.min(opNodes.length, ops.length); i++) {
+        opNodes[i].setOperator(ops[i]);
     }
-    if (!inserted) {
-        inserted = addNumberToCalcTree(calcTree.left, num);
-        if (!inserted) {
-            inserted = addNumberToCalcTree(calcTree.right, num);
+};
+
+
+let setNumbers = (calcTree, numbers) => {
+    let numNodes = getNumberNodes(calcTree);
+    for (let i = 0; i < Math.min(numNodes.length, numbers.length); i++) {
+        numNodes[i].setNumber(numbers[i]);
+    }
+};
+
+
+let getAllOperationSequences = () => {
+    let generateOpSeq = (num, currCombination, allCombinations) => {
+        if (num === 0) {
+            allCombinations.push(currCombination.slice());
+        } else {
+            for (let i = 0; i < ALL_OPS.length; i++) {
+                currCombination.push(ALL_OPS[i]);
+                generateOpSeq(num - 1, currCombination, allCombinations);
+                currCombination.pop();
+            }
+        }
+    };
+
+    let all = [];
+    generateOpSeq(5, [], all);
+    return all;
+}
+
+
+let getAllNumberSequences = (numbers) => {
+    let permute = (n, f) => {
+        let perm = [], used = [];
+        for (let i = 0; i < n; i++) {
+            perm[i] = -1;
+            used[i] = false;
+        }
+
+        let index = 0;
+        while (index >= 0) {
+            let curr = perm[index];
+            if (curr >= 0) {
+                used[curr] = false;
+            }
+            let next = -1;
+            for (let i = curr + 1; i < n && next === -1; i++) {
+                if (!used[i]) {
+                    next = i;
+                }
+            }
+
+            if (next >= 0) {
+                perm[index] = next;
+                used[next] = true;
+                if (index === n - 1) {
+                    f(perm);
+                } else {
+                    index++;
+                }
+            } else {
+                used[curr] = false;
+                perm[index] = -1;
+                index--;
+            }
         }
     }
-    return inserted;
-};
 
-let addNumbersToCalcTree = (calcTree, numbers) => {
-    for (let i = 0; i < numbers.length; i++) {
-        addNumberToCalcTree(calcTree, numbers[i]);
+    let all = [];
+    let permF = p => {
+        let resSeq = [];
+        for (let i = 0; i < p.length; i++) {
+            resSeq.push(numbers[p[i]]);
+        }
+        all.push(resSeq);
     }
-};
+    permute(numbers.length, permF);
+    return all;
+}
 
 
-let calcTrees = [];
-createCalcTrees(4, [""], calcTrees);
+// TESTING
 
-addNumbersToCalcTree(calcTrees[0], [10, 5, 76, 34, 11, 22]);
+let nums = [5, 4, 7, 1, 15, 50];
+let result = 873;
 
-console.log(calcTrees[0]);
+let calcTrees = getAllCalcTrees();
+let allOperationSequences = getAllOperationSequences();
+let allNumberSequences = getAllNumberSequences(nums);
 
+let startTime = Date.now();
 
+// for (let i = 0; i < calcTrees.length; i++) {
+for (let i = 5; i < 10; i++) {
+    let calcTree = calcTrees[i];
+    for (let j = 0; j < allOperationSequences.length; j++) {
+        let opSeq = allOperationSequences[j];
+        for (let k = 0; k < allNumberSequences.length; k++) {
+            let numSeq = allNumberSequences[k];
+            setNumbers(calcTree, numSeq);
+            setOperations(calcTree, opSeq);
+            let currCalc = calcTree.calc();
+            if (currCalc === result) {
+                console.log(`${calcTree.toString()} = ${currCalc}`);
+            }
+        }
+    }
+}
+
+console.log(`Calculation done in ${Date.now() - startTime}`);
