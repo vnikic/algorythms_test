@@ -1,10 +1,12 @@
-function permute(n, f) {
+function variate(n, k, f) {
     let perm = [], used = [];
     for (let i = 0; i < n; i++) {
-        perm[i] = -1;
+        if (i < k) {
+            perm[i] = -1;
+        }
         used[i] = false;
     }
-    
+
     let index = 0;
     while (index >= 0) {
         let curr = perm[index];
@@ -21,7 +23,7 @@ function permute(n, f) {
         if (next >= 0) {
             perm[index] = next;
             used[next] = true;
-            if (index === n - 1) {
+            if (index === k - 1) {
                 f(perm);
             } else {
                 index++;
@@ -32,6 +34,10 @@ function permute(n, f) {
             index--;
         }
     }
+}
+
+function permute(n, f) {
+    variate(n, n, f);
 }
 
 permute(4, p => console.log(p));
