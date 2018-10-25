@@ -1,10 +1,9 @@
-let OP_NONE = 0;
-let OP_PLUS = 1;
-let OP_MINUS = 2;
-let OP_MULT = 3;
-let OP_DIV = 4;
+let OP_PLUS = 0;
+let OP_MINUS = 1;
+let OP_MULT = 2;
+let OP_DIV = 3;
 
-let ALL_OPS = [OP_NONE, OP_PLUS, OP_MINUS, OP_MULT, OP_DIV];
+let ALL_OPS = [OP_PLUS, OP_MINUS, OP_MULT, OP_DIV];
 
 
 class CalcNode {
@@ -57,12 +56,7 @@ class OperatorNode extends CalcNode {
         if (leftCalc === NaN) {
             return NaN;
         }
-        if (this.operator === OP_NONE && this.left) {
-            return leftCalc;
-        }
-
         let rightCalc = this.right.calc();
-
         if (rightCalc === NaN) {
             return NaN;
         }
@@ -93,9 +87,6 @@ class OperatorNode extends CalcNode {
 
     toString() {
         let leftStr = this.left ? this.left.toString() : "y";
-        if (this.operator === OP_NONE) {
-            return leftStr;
-        }
         let rightStr = this.right ? this.right.toString(): "y";
         let opStr = "#";
         switch (this.operator) {
@@ -249,7 +240,9 @@ let createCalcTrees = (n, nodes, calcTrees) => {
 
 let getAllCalcTrees = () => {
     let calcTrees = [];
-    createCalcTrees(4, [""], calcTrees);
+    for (let i = 1; i <= 4; i++) {
+        createCalcTrees(i, [""], calcTrees);
+    }
     return calcTrees;
 }
 
@@ -268,7 +261,7 @@ let setNumbers = (numNodes, numbers) => {
 };
 
 
-let getAllOperationSequences = () => {
+let getAllOperationSequences = (n) => {
     let generateOpSeq = (num, currCombination, allCombinations) => {
         if (num === 0) {
             allCombinations.push(currCombination.slice());
@@ -282,16 +275,18 @@ let getAllOperationSequences = () => {
     };
 
     let all = [];
-    generateOpSeq(5, [], all);
+    generateOpSeq(n, [], all);
     return all;
 }
 
 
-let getAllNumberSequences = (numbers) => {
-    let permute = (n, f) => {
+let getAllNumberSequences = (n, numbers) => {
+    function variate(n, k, f) {
         let perm = [], used = [];
         for (let i = 0; i < n; i++) {
-            perm[i] = -1;
+            if (i < k) {
+                perm[i] = -1;
+            }
             used[i] = false;
         }
 
@@ -311,7 +306,7 @@ let getAllNumberSequences = (numbers) => {
             if (next >= 0) {
                 perm[index] = next;
                 used[next] = true;
-                if (index === n - 1) {
+                if (index === k - 1) {
                     f(perm);
                 } else {
                     index++;
@@ -332,38 +327,46 @@ let getAllNumberSequences = (numbers) => {
         }
         all.push(resSeq);
     }
-    permute(numbers.length, permF);
+    variate(numbers.length, n, permF);
     return all;
 }
 
 
 // TESTING
+let startTime = Date.now();
 
-let nums = [2, 4, 7, 1, 15, 50];
-let result = 659;
+let nums = [2, 1, 3, 1, 10, 25];
+let result = 741;
 let count = 0;
 
 let calcTrees = getAllCalcTrees();
-let allOperationSequences = getAllOperationSequences();
-let allNumberSequences = getAllNumberSequences(nums);
-
-let startTime = Date.now();
+let allOperationSequences = [];
+for (let i = 1; i <= nums.length - 1; i++) {
+    allOperationSequences[i - 1] = getAllOperationSequences(i);
+}
+let allNumberSequences = [];
+for (let i = 1; i <= nums.length; i++) {
+    allNumberSequences[i - 1] = getAllNumberSequences(i, nums);
+}
 
 for (let i = 0; i < calcTrees.length; i++) {
-// for (let i = 5; i < 10; i++) {
     let calcTree = calcTrees[i];
     let opNodes = getOperationNodes(calcTree);
+    let opNodeCount = opNodes.length;
     let numNodes = getNumberNodes(calcTree);
+    let numNodesCount = numNodes.length;
 
-    for (let j = 0; j < allOperationSequences.length; j++) {
-        setOperations(opNodes, allOperationSequences[j]);
-        for (let k = 0; k < allNumberSequences.length; k++) {
-            let numSeq = allNumberSequences[k];
+    let properOperationSequences = allOperationSequences[opNodeCount - 1];
+    for (let j = 0; j < properOperationSequences.length; j++) {
+        setOperations(opNodes, properOperationSequences[j]);
+        let properNumberSequences = allNumberSequences[numNodesCount - 1];
+        for (let k = 0; k < properNumberSequences.length; k++) {
+            let numSeq = properNumberSequences[k];
             setNumbers(numNodes, numSeq);
             let currCalc = calcTree.calc();
             if (currCalc === result) {
                 count++;
-                // console.log(`${calcTree.toString()} = ${currCalc}`);
+                console.log(`${calcTree.toString()} = ${currCalc}`);
             }
         }
     }
