@@ -55,19 +55,19 @@ class OperatorNode extends CalcNode {
         if (isNaN(rightCalc)) {
             return NaN;
         }
+        if (leftCalc < rightCalc) {
+            return NaN;
+        }
 
         switch (this.operator) {
             case OP_PLUS:
                 return leftCalc + rightCalc;
             case OP_MINUS:
-                if (leftCalc > rightCalc) {
-                    return leftCalc - rightCalc;
-                }
-                break;
+                return leftCalc !== rightCalc ? leftCalc - rightCalc : NaN;
             case OP_MULT:
-                return leftCalc * rightCalc;
+                return leftCalc !== 1 ? leftCalc * rightCalc : NaN;
             case OP_DIV:
-                if (rightCalc !== 0 && leftCalc > rightCalc) {
+                if (rightCalc !== 1) {
                     let div = leftCalc / rightCalc;
                     return div % 1 === 0.0 ? div : NaN;
                 }
@@ -132,9 +132,7 @@ class NumberNode extends CalcNode {
 
 let getOperationNodes = (calcTree) => {
     let collectOperationNodes = (calcTree, collectedNodes) => {
-        if (calcTree === null) {
-            return;
-        } else if (!calcTree.isLeaf()) {
+        if (calcTree !== null && !calcTree.isLeaf()) {
             collectOperationNodes(calcTree.left, collectedNodes);
             collectedNodes.push(calcTree);
             collectOperationNodes(calcTree.right, collectedNodes);
@@ -144,18 +142,18 @@ let getOperationNodes = (calcTree) => {
     let opNodes = [];
     collectOperationNodes(calcTree, opNodes);
     return opNodes;
-}
+};
 
 
 let getNumberNodes = (calcTree) => {
     let collectNumberNodes = (calcTree, collectedNodes) => {
-        if (calcTree === null) {
-            return;
-        } else if (calcTree.isLeaf()) {
-            collectedNodes.push(calcTree);
-        } else {
-            collectNumberNodes(calcTree.left, collectedNodes);
-            collectNumberNodes(calcTree.right, collectedNodes);
+        if (calcTree !== null) {
+            if (calcTree.isLeaf()) {
+                collectedNodes.push(calcTree);
+            } else {
+                collectNumberNodes(calcTree.left, collectedNodes);
+                collectNumberNodes(calcTree.right, collectedNodes);
+            }
         }
     };
 
@@ -166,9 +164,7 @@ let getNumberNodes = (calcTree) => {
 
 
 let defineCalcTreeNumberPlaceholders = (calcTree) => {
-    if (calcTree === null) {
-        return;
-    } else if (!calcTree.isLeaf()) {
+    if (calcTree !== null && !calcTree.isLeaf()) {
         if (calcTree.left === null) {
             calcTree.setLeft(new NumberNode(1));
         } else {
@@ -180,7 +176,7 @@ let defineCalcTreeNumberPlaceholders = (calcTree) => {
             defineCalcTreeNumberPlaceholders(calcTree.right);
         }
     }
-}
+};
 
 
 let createCalcTree = (nodes) => {
@@ -318,17 +314,17 @@ let getAllNumberSequences = (n, numbers) => {
             resSeq.push(numbers[p[i]]);
         }
         all.push(resSeq);
-    }
+    };
     variate(numbers.length, n, permF);
     return all;
-}
+};
 
 
 // TESTING
 let startTime = Date.now();
 
 let nums = [2, 1, 3, 4, 10, 25];
-let result = 673;
+let result = 773;
 let count = 0;
 
 let calcTrees = getAllCalcTrees();
