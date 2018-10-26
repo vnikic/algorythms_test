@@ -28,11 +28,6 @@ class CalcNode {
         return false;
     }
 
-    setNodes(left, right) {
-        this.left = left;
-        this.right = right;
-    }
-
     getPrecedence() {
         return 0;
     }
@@ -53,11 +48,11 @@ class OperatorNode extends CalcNode {
 
     calc() {
         let leftCalc = this.left.calc();
-        if (leftCalc === NaN) {
+        if (isNaN(leftCalc)) {
             return NaN;
         }
         let rightCalc = this.right.calc();
-        if (rightCalc === NaN) {
+        if (isNaN(rightCalc)) {
             return NaN;
         }
 
@@ -72,7 +67,7 @@ class OperatorNode extends CalcNode {
             case OP_MULT:
                 return leftCalc * rightCalc;
             case OP_DIV:
-                if (rightCalc != 0 && leftCalc > rightCalc) {
+                if (rightCalc !== 0 && leftCalc > rightCalc) {
                     let div = leftCalc / rightCalc;
                     return div % 1 === 0.0 ? div : NaN;
                 }
@@ -123,9 +118,6 @@ class NumberNode extends CalcNode {
     }
 
     setRight(node) {
-    }
-
-    setNodes(left, right) {
     }
 
     calc() {
@@ -277,7 +269,7 @@ let getAllOperationSequences = (n) => {
     let all = [];
     generateOpSeq(n, [], all);
     return all;
-}
+};
 
 
 let getAllNumberSequences = (n, numbers) => {
