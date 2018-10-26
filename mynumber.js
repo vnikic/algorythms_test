@@ -65,24 +65,24 @@ class OperatorNode extends CalcNode {
             case OP_PLUS:
                 return leftCalc + rightCalc;
             case OP_MINUS:
-                return leftCalc - rightCalc;
+                if (leftCalc > rightCalc) {
+                    return leftCalc - rightCalc;
+                }
+                break;
             case OP_MULT:
                 return leftCalc * rightCalc;
             case OP_DIV:
-                if (rightCalc != 0) {
+                if (rightCalc != 0 && leftCalc > rightCalc) {
                     let div = leftCalc / rightCalc;
                     return div % 1 === 0.0 ? div : NaN;
                 }
+                break;
         }
         return NaN;
     }
 
     getPrecedence() {
-        switch (this.operator) {
-            case OP_PLUS, OP_MINUS: return 2;
-            case OP_MULT, OP_DIV: return 1;
-        }
-        return 0;
+        return this.operator === OP_PLUS || this.operator === OP_MINUS ? 2 : 1;
     }
 
     toString() {
@@ -96,10 +96,10 @@ class OperatorNode extends CalcNode {
             case OP_DIV: opStr = "/"; break;
         }
 
-        let s = `(${leftStr} ${opStr} ${rightStr})`;
-        // if (this.getPrecedence() === 2) {
-        //     s = `(${s})`;
-        // }
+        let s = `${leftStr} ${opStr} ${rightStr}`;
+        if (this.getPrecedence() === 2) {
+            s = `(${s})`;
+        }
         return s;
     }
 }
@@ -335,8 +335,8 @@ let getAllNumberSequences = (n, numbers) => {
 // TESTING
 let startTime = Date.now();
 
-let nums = [2, 1, 3, 1, 10, 25];
-let result = 741;
+let nums = [2, 1, 3, 4, 10, 25];
+let result = 673;
 let count = 0;
 
 let calcTrees = getAllCalcTrees();
@@ -348,6 +348,9 @@ let allNumberSequences = [];
 for (let i = 1; i <= nums.length; i++) {
     allNumberSequences[i - 1] = getAllNumberSequences(i, nums);
 }
+
+let bestMatch = -1;
+let bestExpression = null;
 
 for (let i = 0; i < calcTrees.length; i++) {
     let calcTree = calcTrees[i];
@@ -364,12 +367,22 @@ for (let i = 0; i < calcTrees.length; i++) {
             let numSeq = properNumberSequences[k];
             setNumbers(numNodes, numSeq);
             let currCalc = calcTree.calc();
-            if (currCalc === result) {
-                count++;
-                console.log(`${calcTree.toString()} = ${currCalc}`);
+            if (!isNaN(currCalc)) {
+                if (currCalc === result) {
+                    count++;
+                    console.log(`${calcTree.toString()} = ${currCalc}`);
+                }
+                if (count === 0 && Math.abs(result - bestMatch) > Math.abs(currCalc - bestMatch)) {
+                    bestMatch = currCalc;
+                    bestExpression = calcTree.toString();
+                }
             }
         }
     }
 }
 
-console.log(`Number of expressions found: ${count}. Calculation done in ${Date.now() - startTime}`);
+if (count === 0) {
+    console.log(`Nearest match: ${bestExpression} = ${bestMatch}`);
+}
+
+console.log(`Number of expressions found: ${count}. Calculation done in ${Date.now() - startTime}ms`);
