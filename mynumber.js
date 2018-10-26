@@ -92,7 +92,7 @@ class OperatorNode extends CalcNode {
         }
 
         let s = `${leftStr} ${opStr} ${rightStr}`;
-        if (this.getPrecedence() === 2) {
+        if (this.operator !== OP_MULT) {
             s = `(${s})`;
         }
         return s;
