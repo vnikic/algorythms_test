@@ -28,10 +28,6 @@ class CalcNode {
         return false;
     }
 
-    getPrecedence() {
-        return 0;
-    }
-
     toString() {
     }
 
@@ -61,14 +57,14 @@ class OperatorNode extends CalcNode {
         }
         switch (this.operator) {
             case OP_PLUS:
-                if (this.left.isLeaf() === this.right.isLeaf() && leftCalc < rightCalc) {
+                if (this.left.isLeaf() === this.right.isLeaf() && leftCalc < rightCalc) {   // duplicate
                     return NaN;
                 }
                 return leftCalc + rightCalc;
             case OP_MINUS:
                 return leftCalc > rightCalc ? leftCalc - rightCalc : NaN;
             case OP_MULT:
-                if (this.left.isLeaf() === this.right.isLeaf() && leftCalc < rightCalc) {
+                if (this.left.isLeaf() === this.right.isLeaf() && leftCalc < rightCalc) {   // duplicate
                     return NaN;
                 }
                 return leftCalc !== 1 ? leftCalc * rightCalc : NaN;
@@ -80,10 +76,6 @@ class OperatorNode extends CalcNode {
                 break;
         }
         return NaN;
-    }
-
-    getPrecedence() {
-        return this.operator === OP_PLUS || this.operator === OP_MINUS ? 2 : 1;
     }
 
     toString() {
@@ -321,7 +313,7 @@ let getAllNumberSequences = (n, numbers) => {
 // TESTING
 let startTime = Date.now();
 
-let nums = [4, 3, 8, 7, 11, 52];
+let nums = [3, 3, 8, 8, 13, 53];
 let result = 2221;
 let count = 0;
 
