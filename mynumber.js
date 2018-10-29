@@ -12,6 +12,10 @@ class CalcNode {
         this.right = null;
     }
 
+    getPrecedence() {
+        return 10;
+    }
+
     calc() {
         return NaN;
     }
@@ -44,6 +48,10 @@ class OperatorNode extends CalcNode {
 
     setOperator(op) {
         this.operator = op;
+    }
+
+    getPrecedence() {
+        return this.operator;
     }
 
     calc() {
@@ -79,21 +87,34 @@ class OperatorNode extends CalcNode {
     }
 
     toString() {
-        let leftStr = this.left ? this.left.toString() : "y";
-        let rightStr = this.right ? this.right.toString(): "y";
+        let leftStr = this.left.toString();
+        let rightStr = this.right.toString();
         let opStr = "#";
         switch (this.operator) {
-            case OP_PLUS: opStr = "+"; break;
-            case OP_MINUS: opStr = "-"; break;
-            case OP_MULT: opStr = "*"; break;
-            case OP_DIV: opStr = "/"; break;
+            case OP_PLUS:
+                return `${leftStr} + ${rightStr}`;
+            case OP_MINUS:
+                if (this.right.getPrecedence() <= 1) {
+                    rightStr = "(" + rightStr + ")";
+                }
+                return `${leftStr} - ${rightStr}`;
+            case OP_MULT:
+                if (this.left.getPrecedence() <= 1) {
+                    leftStr = "(" + leftStr + ")";
+                }
+                if (this.right.getPrecedence() <= 1) {
+                    rightStr = "(" + rightStr + ")";
+                }
+                return `${leftStr} * ${rightStr}`;
+            case OP_DIV:
+                if (this.left.getPrecedence() <= 1) {
+                    leftStr = "(" + leftStr + ")";
+                }
+                if (this.left.getPrecedence() <= 2) {
+                    leftStr = "(" + leftStr + ")";
+                }
+                return `${leftStr} / ${rightStr}`;
         }
-
-        let s = `${leftStr} ${opStr} ${rightStr}`;
-        if (this.operator !== OP_MULT) {
-            s = `(${s})`;
-        }
-        return s;
     }
 
     isValid() {
@@ -130,7 +151,7 @@ class NumberNode extends CalcNode {
     }
 
     toString() {
-        return this.num ? this.num : "x";
+        return this.num;
     }
 }
 
@@ -231,9 +252,9 @@ let createCalcTrees = (n, nodes, calcTrees) => {
 };
 
 
-let getAllCalcTrees = () => {
+let getAllCalcTrees = (n) => {
     let calcTrees = [];
-    for (let i = 1; i <= 4; i++) {
+    for (let i = 1; i <= n; i++) {
         createCalcTrees(i, [""], calcTrees);
     }
     return calcTrees;
@@ -313,13 +334,13 @@ let getAllNumberSequences = (n, numbers) => {
 // TESTING
 let startTime = Date.now();
 
-let nums = [3, 3, 8, 8, 13, 53];
+let nums = [2, 3, 7, 6, 15, 75];
 let result = 2221;
 let count = 0;
 
 nums.sort();
 
-let calcTrees = getAllCalcTrees();
+let calcTrees = getAllCalcTrees(nums.length - 2);
 let allOperationSequences = [];
 for (let i = 1; i <= nums.length - 1; i++) {
     allOperationSequences[i - 1] = getAllOperationSequences(i);
