@@ -89,7 +89,6 @@ class OperatorNode extends CalcNode {
     toString() {
         let leftStr = this.left.toString();
         let rightStr = this.right.toString();
-        let opStr = "#";
         switch (this.operator) {
             case OP_PLUS:
                 return `${leftStr} + ${rightStr}`;
@@ -340,8 +339,8 @@ let getAllNumberSequences = (n, numbers) => {
 // TESTING
 let startTime = Date.now();
 
-let nums = [2, 1, 7, 6, 12, 75];
-let result = 2221;
+let nums = [3, 5, 7, 6, 10, 75];
+let result = 630;
 let count = 0;
 
 nums.sort();
