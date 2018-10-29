@@ -34,6 +34,10 @@ class CalcNode {
 
     toString() {
     }
+
+    isValid() {
+        return true;
+    }
 }
 
 
@@ -55,19 +59,21 @@ class OperatorNode extends CalcNode {
         if (isNaN(rightCalc)) {
             return NaN;
         }
-        if (leftCalc < rightCalc) {
-            return NaN;
-        }
-
         switch (this.operator) {
             case OP_PLUS:
+                if (this.left.isLeaf() === this.right.isLeaf() && leftCalc < rightCalc) {
+                    return NaN;
+                }
                 return leftCalc + rightCalc;
             case OP_MINUS:
-                return leftCalc !== rightCalc ? leftCalc - rightCalc : NaN;
+                return leftCalc > rightCalc ? leftCalc - rightCalc : NaN;
             case OP_MULT:
+                if (this.left.isLeaf() === this.right.isLeaf() && leftCalc < rightCalc) {
+                    return NaN;
+                }
                 return leftCalc !== 1 ? leftCalc * rightCalc : NaN;
             case OP_DIV:
-                if (rightCalc !== 1) {
+                if (leftCalc > rightCalc) {
                     let div = leftCalc / rightCalc;
                     return div % 1 === 0.0 ? div : NaN;
                 }
@@ -96,6 +102,13 @@ class OperatorNode extends CalcNode {
             s = `(${s})`;
         }
         return s;
+    }
+
+    isValid() {
+        if ((this.operator === OP_PLUS || this.operator === OP_MULT) && this.left.isLeaf()) {
+            return this.right.isLeaf();
+        }
+        return true;
     }
 }
 
@@ -232,7 +245,7 @@ let getAllCalcTrees = () => {
         createCalcTrees(i, [""], calcTrees);
     }
     return calcTrees;
-}
+};
 
 
 let setOperations = (opNodes, ops) => {
@@ -293,7 +306,14 @@ let getAllNumberSequences = (n, numbers) => {
     };
 
     let all = [];
-    variationsNoRepetition(numbers, n, v => all.push(v.slice()));
+    const allDiff = new Set([]);
+    variationsNoRepetition(numbers, n, v => {
+        let s = v.toString();
+        if (!allDiff.has(s)) {
+            all.push(v.slice());
+            allDiff.add(s);
+        }
+    });
     return all;
 };
 
@@ -301,9 +321,11 @@ let getAllNumberSequences = (n, numbers) => {
 // TESTING
 let startTime = Date.now();
 
-let nums = [2, 1, 3, 4, 10, 25];
-let result = 773;
+let nums = [4, 3, 8, 7, 11, 52];
+let result = 2221;
 let count = 0;
+
+nums.sort();
 
 let calcTrees = getAllCalcTrees();
 let allOperationSequences = [];
@@ -328,19 +350,27 @@ for (let i = 0; i < calcTrees.length; i++) {
     let properOperationSequences = allOperationSequences[opNodeCount - 1];
     for (let j = 0; j < properOperationSequences.length; j++) {
         setOperations(opNodes, properOperationSequences[j]);
-        let properNumberSequences = allNumberSequences[numNodesCount - 1];
-        for (let k = 0; k < properNumberSequences.length; k++) {
-            let numSeq = properNumberSequences[k];
-            setNumbers(numNodes, numSeq);
-            let currCalc = calcTree.calc();
-            if (!isNaN(currCalc)) {
-                if (currCalc === result) {
-                    count++;
-                    console.log(`${calcTree.toString()} = ${currCalc}`);
-                }
-                if (count === 0 && Math.abs(result - bestMatch) > Math.abs(currCalc - bestMatch)) {
-                    bestMatch = currCalc;
-                    bestExpression = calcTree.toString();
+        let valid = true;
+        for (let ii = 0; ii < opNodes.length && valid; ii++) {      // eliminate some of duplicate expressions this way
+            if (!opNodes[ii].isValid()) {
+                valid = false;
+            }
+        }
+        if (valid) {
+            let properNumberSequences = allNumberSequences[numNodesCount - 1];
+            for (let k = 0; k < properNumberSequences.length; k++) {
+                let numSeq = properNumberSequences[k];
+                setNumbers(numNodes, numSeq);
+                let currCalc = calcTree.calc();
+                if (!isNaN(currCalc)) {
+                    if (currCalc === result) {
+                        count++;
+                        console.log(`${calcTree.toString()} = ${currCalc}`);
+                    }
+                    if (count === 0 && Math.abs(result - bestMatch) > Math.abs(currCalc - bestMatch)) {
+                        bestMatch = currCalc;
+                        bestExpression = calcTree.toString();
+                    }
                 }
             }
         }

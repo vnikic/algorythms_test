@@ -55,4 +55,4 @@ let variationsNoRepetition = (arr, n, f) => {
 };
 
 
-variationsNoRepetition([0, 1, 2, 3, 4], 3, comb => console.log(comb));
+variationsNoRepetition([2, 2, 2, 7, 10, 51], 4, comb => console.log(comb.toString()));
