@@ -160,7 +160,7 @@ let getNumberNodes = (calcTree) => {
     let opNodes = [];
     collectNumberNodes(calcTree, opNodes);
     return opNodes;
-}
+};
 
 
 let defineCalcTreeNumberPlaceholders = (calcTree) => {
@@ -269,53 +269,31 @@ let getAllOperationSequences = (n) => {
 
 
 let getAllNumberSequences = (n, numbers) => {
-    function variate(n, k, f) {
-        let perm = [], used = [];
-        for (let i = 0; i < n; i++) {
-            if (i < k) {
-                perm[i] = -1;
-            }
-            used[i] = false;
-        }
-
-        let index = 0;
-        while (index >= 0) {
-            let curr = perm[index];
-            if (curr >= 0) {
-                used[curr] = false;
-            }
-            let next = -1;
-            for (let i = curr + 1; i < n && next === -1; i++) {
-                if (!used[i]) {
-                    next = i;
-                }
-            }
-
-            if (next >= 0) {
-                perm[index] = next;
-                used[next] = true;
-                if (index === k - 1) {
-                    f(perm);
-                } else {
-                    index++;
-                }
+    let variationsNoRepetition = (arr, n, f) => {
+        let variate = (k, usedArray, resArray) => {
+            if (k === 0) {
+                f(resArray);
             } else {
-                used[curr] = false;
-                perm[index] = -1;
-                index--;
+                for (let i = 0; i < arr.length; i++) {
+                    if (usedArray[i] === undefined) {
+                        usedArray[i] = false;
+                    }
+                    if (!usedArray[i]) {
+                        resArray.push(arr[i]);
+                        usedArray[i] = true;
+                        variate(k - 1, usedArray, resArray);
+                        usedArray[i] = false;
+                        resArray.pop();
+                    }
+                }
             }
-        }
-    }
+        };
+
+        variate(n, [], []);
+    };
 
     let all = [];
-    let permF = p => {
-        let resSeq = [];
-        for (let i = 0; i < p.length; i++) {
-            resSeq.push(numbers[p[i]]);
-        }
-        all.push(resSeq);
-    };
-    variate(numbers.length, n, permF);
+    variationsNoRepetition(numbers, n, v => all.push(v.slice()));
     return all;
 };
 
