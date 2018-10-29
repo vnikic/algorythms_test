@@ -120,6 +120,12 @@ class OperatorNode extends CalcNode {
     isValid() {
         if ((this.operator === OP_PLUS || this.operator === OP_MULT) && this.left.isLeaf()) {
             return this.right.isLeaf();
+        } else if (this.operator === OP_MINUS) {
+            let rightPrecedence = this.right.getPrecedence();
+            return rightPrecedence >= OP_MULT;
+        } else if (this.operator === OP_DIV) {
+            let rightPrecedence = this.right.getPrecedence();
+            return rightPrecedence !== OP_MULT && rightPrecedence !== OP_DIV;
         }
         return true;
     }
@@ -334,7 +340,7 @@ let getAllNumberSequences = (n, numbers) => {
 // TESTING
 let startTime = Date.now();
 
-let nums = [2, 3, 7, 6, 15, 75];
+let nums = [2, 1, 7, 6, 12, 75];
 let result = 2221;
 let count = 0;
 
