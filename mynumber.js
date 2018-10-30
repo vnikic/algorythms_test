@@ -266,7 +266,7 @@ let createCalcTree = (nodes) => {
 };
 
 
-let createCalcTrees = (n, nodes, calcTrees) => {
+let createExpressions = (n, nodes, calcTrees) => {
     if (n > 0) {
         for (let i = 0; i < nodes.length; i++) {
             let nodeToAppend = nodes[i];
@@ -274,7 +274,7 @@ let createCalcTrees = (n, nodes, calcTrees) => {
                 let newNode = nodeToAppend + j;
                 if (nodes[nodes.length - 1] < newNode) {
                     nodes.push(newNode);
-                    createCalcTrees(n - 1, nodes, calcTrees);
+                    createExpressions(n - 1, nodes, calcTrees);
                     nodes.pop();
                 }
             }
@@ -282,15 +282,6 @@ let createCalcTrees = (n, nodes, calcTrees) => {
     } else {
         calcTrees.push(createCalcTree(nodes));
     }
-};
-
-
-let getAllCalcTrees = (n) => {
-    let calcTrees = [];
-    for (let i = 1; i <= n; i++) {
-        createCalcTrees(i, [""], calcTrees);
-    }
-    return calcTrees;
 };
 
 
@@ -364,68 +355,66 @@ let getAllNumberSequences = (n, numbers) => {
 };
 
 
+let areOperationsValid = (opNodes) => {
+    for (let ii = 0; ii < opNodes.length; ii++) {      // eliminate some of duplicate expressions this way
+        if (!opNodes[ii].isValid()) {
+            return false;
+        }
+    }
+    return true;
+};
+
+
 // TESTING
 let startTime = Date.now();
 
-// let nums = [3, 5, 7, 1, 10, 75]; let result = 2221;
+// let nums = [3, 5, 7, 1, 10, 75]; let result = 8;
+let nums = [3, 5, 7, 1, 10, 75]; let result = 976;
 // let nums = [3, 1, 8, 8, 10, 75]; let result = 977;
-let nums = [2, 2, 8, 8, 11, 34]; let result = 1183;
+// let nums = [2, 2, 8, 8, 11, 34]; let result = 1183;
 
 
 let count = 0;
 
 nums.sort();
 
-let calcTrees = getAllCalcTrees(nums.length - 2);
-
-let allOperationSequences = [];
-for (let i = 1; i <= nums.length - 1; i++) {
-    allOperationSequences[i - 1] = getAllOperationSequences(i);
-}
-let allNumberSequences = [];
-for (let i = 1; i <= nums.length; i++) {
-    allNumberSequences[i - 1] = getAllNumberSequences(i, nums);
-}
-
 let bestMatch = -1;
 let bestExpression = null;
 
-for (let i = 0; i < calcTrees.length; i++) {
-    let calcTree = calcTrees[i];
-    let opNodes = getOperationNodes(calcTree);
-    let opNodeCount = opNodes.length;
-    let numNodes = getNumberNodes(calcTree);
-    let numNodesCount = numNodes.length;
 
-    let properOperationSequences = allOperationSequences[opNodeCount - 1];
-    for (let j = 0; j < properOperationSequences.length; j++) {
-        setOperations(opNodes, properOperationSequences[j]);
-        let valid = true;
-        for (let ii = 0; ii < opNodes.length && valid; ii++) {      // eliminate some of duplicate expressions this way
-            if (!opNodes[ii].isValid()) {
-                valid = false;
-            }
-        }
-        if (valid) {
-            let properNumberSequences = allNumberSequences[numNodesCount - 1];
-            for (let k = 0; k < properNumberSequences.length; k++) {
-                let numSeq = properNumberSequences[k];
-                setNumbers(numNodes, numSeq);
-                let currCalc = calcTree.calc();
-                if (!isNaN(currCalc)) {
-                    if (currCalc === result) {
-                        count++;
-                        console.log(`${calcTree.toString()} = ${currCalc}`);
-                    }
-                    if (count === 0 && Math.abs(result - bestMatch) > Math.abs(currCalc - result)) {
-                        bestMatch = currCalc;
-                        bestExpression = calcTree.toString();
+for (let opCount = 0; opCount <= nums.length - 2; opCount++) {
+    let expressions = [];
+    createExpressions(opCount, [""], expressions);
+    let opSequences = getAllOperationSequences(opCount + 1);
+    let numSequences = getAllNumberSequences(opCount + 2, nums);
+
+    for (let i = 0; i < expressions.length; i++) {
+        let expression = expressions[i];
+        let opNodes = getOperationNodes(expression);
+        let numNodes = getNumberNodes(expression);
+
+        for (let j = 0; j < opSequences.length; j++) {
+            setOperations(opNodes, opSequences[j]);
+            if (areOperationsValid(opNodes)) {
+                for (let k = 0; k < numSequences.length; k++) {
+                    setNumbers(numNodes, numSequences[k]);
+                    let currCalc = expression.calc();
+                    if (!isNaN(currCalc)) {
+                        if (currCalc === result) {
+                            count++;
+                            console.log(`${expression.toString()} = ${currCalc}`);
+                        }
+                        if (count === 0 && Math.abs(result - bestMatch) > Math.abs(currCalc - result)) {
+                            bestMatch = currCalc;
+                            bestExpression = expression.toString();
+                        }
                     }
                 }
             }
         }
     }
 }
+
 
 if (count === 0) {
     console.log(`Nearest match: ${bestExpression} = ${bestMatch}`);
