@@ -160,9 +160,9 @@ class OperatorNode extends CalcNode {
 
 
 class NumberNode extends CalcNode {
-    constructor(num) {
+    constructor() {
         super();
-        this.num = num;
+        this.num = NaN;
     }
 
     setNumber(num) {
@@ -173,14 +173,8 @@ class NumberNode extends CalcNode {
         return true;
     }
 
-    setLeft(node) {
-    }
-
-    setRight(node) {
-    }
-
     calc() {
-        return this.num ? this.num: NaN;
+        return this.num;
     }
 
     toString() {
@@ -225,12 +219,12 @@ let getNumberNodes = (calcTree) => {
 let defineCalcTreeNumberPlaceholders = (calcTree) => {
     if (calcTree !== null && !calcTree.isLeaf()) {
         if (calcTree.left === null) {
-            calcTree.setLeft(new NumberNode(1));
+            calcTree.setLeft(new NumberNode());
         } else {
             defineCalcTreeNumberPlaceholders(calcTree.left);
         }
         if (calcTree.right === null) {
-            calcTree.setRight(new NumberNode(1));
+            calcTree.setRight(new NumberNode());
         } else {
             defineCalcTreeNumberPlaceholders(calcTree.right);
         }
@@ -369,9 +363,9 @@ let areOperationsValid = (opNodes) => {
 let startTime = Date.now();
 
 // let nums = [3, 5, 7, 1, 10, 75]; let result = 8;
-let nums = [3, 5, 7, 1, 10, 75]; let result = 976;
+// let nums = [3, 5, 7, 1, 10, 75]; let result = 976;
 // let nums = [3, 1, 8, 8, 10, 75]; let result = 977;
-// let nums = [2, 2, 8, 8, 11, 34]; let result = 1183;
+let nums = [2, 2, 8, 8, 11, 34]; let result = 1183;
 
 
 let count = 0;
