@@ -12,7 +12,7 @@ class CalcNode {
         this.right = null;
     }
 
-    getPrecedence() {
+    getStrength() {
         return 10;
     }
 
@@ -50,8 +50,12 @@ class OperatorNode extends CalcNode {
         this.operator = op;
     }
 
-    getPrecedence() {
+    getStrength() {
         return this.operator;
+    }
+
+    getOpPrecedence() {
+        return this.operator === OP_PLUS || this.operator === OP_MINUS ? 1 : 2;
     }
 
     calc() {
@@ -63,6 +67,14 @@ class OperatorNode extends CalcNode {
         if (isNaN(rightCalc)) {
             return NaN;
         }
+
+        // remove commutative duplicates
+        if (this.right.isLeaf() && !this.left.isLeaf() && this.left.right.isLeaf() && this.getOpPrecedence() === this.left.getOpPrecedence()) {
+            if (this.left.right.num < this.right.num) {
+                return NaN;
+            }
+        }
+
         switch (this.operator) {
             case OP_PLUS:
                 if (this.left.isLeaf() === this.right.isLeaf() && leftCalc < rightCalc) {   // duplicate
@@ -77,13 +89,29 @@ class OperatorNode extends CalcNode {
                 }
                 return leftCalc !== 1 ? leftCalc * rightCalc : NaN;
             case OP_DIV:
-                if (leftCalc > rightCalc) {
+                if (leftCalc >= rightCalc) {
                     let div = leftCalc / rightCalc;
                     return div % 1 === 0.0 ? div : NaN;
                 }
                 break;
         }
         return NaN;
+    }
+
+    getOperationSign() {
+        switch (this.operator) {
+            case OP_PLUS: return "+";
+            case OP_MINUS: return "-";
+            case OP_MULT: return "*";
+            case OP_DIV: return "/";
+        }
+        return "#";
+    }
+
+    print() {
+        let lp = this.left.isLeaf() ? "x" : this.left.print();
+        let rp = this.right.isLeaf() ? "x" : this.right.print();
+        return `${this.getOperationSign()}${lp}${rp}`;
     }
 
     toString() {
@@ -93,23 +121,23 @@ class OperatorNode extends CalcNode {
             case OP_PLUS:
                 return `${leftStr} + ${rightStr}`;
             case OP_MINUS:
-                if (this.right.getPrecedence() <= 1) {
+                if (this.right.getStrength() <= 1) {
                     rightStr = "(" + rightStr + ")";
                 }
                 return `${leftStr} - ${rightStr}`;
             case OP_MULT:
-                if (this.left.getPrecedence() <= 1) {
+                if (this.left.getStrength() <= 1) {
                     leftStr = "(" + leftStr + ")";
                 }
-                if (this.right.getPrecedence() <= 1) {
+                if (this.right.getStrength() <= 1) {
                     rightStr = "(" + rightStr + ")";
                 }
                 return `${leftStr} * ${rightStr}`;
             case OP_DIV:
-                if (this.left.getPrecedence() <= 1) {
+                if (this.left.getStrength() <= 1) {
                     leftStr = "(" + leftStr + ")";
                 }
-                if (this.left.getPrecedence() <= 2) {
+                if (this.left.getStrength() <= 2) {
                     leftStr = "(" + leftStr + ")";
                 }
                 return `${leftStr} / ${rightStr}`;
@@ -120,10 +148,10 @@ class OperatorNode extends CalcNode {
         if ((this.operator === OP_PLUS || this.operator === OP_MULT) && this.left.isLeaf()) {
             return this.right.isLeaf();
         } else if (this.operator === OP_MINUS) {
-            let rightPrecedence = this.right.getPrecedence();
+            let rightPrecedence = this.right.getStrength();
             return rightPrecedence >= OP_MULT;
         } else if (this.operator === OP_DIV) {
-            let rightPrecedence = this.right.getPrecedence();
+            let rightPrecedence = this.right.getStrength();
             return rightPrecedence !== OP_MULT && rightPrecedence !== OP_DIV;
         }
         return true;
@@ -164,8 +192,8 @@ class NumberNode extends CalcNode {
 let getOperationNodes = (calcTree) => {
     let collectOperationNodes = (calcTree, collectedNodes) => {
         if (calcTree !== null && !calcTree.isLeaf()) {
-            collectOperationNodes(calcTree.left, collectedNodes);
             collectedNodes.push(calcTree);
+            collectOperationNodes(calcTree.left, collectedNodes);
             collectOperationNodes(calcTree.right, collectedNodes);
         }
     };
@@ -339,13 +367,17 @@ let getAllNumberSequences = (n, numbers) => {
 // TESTING
 let startTime = Date.now();
 
-let nums = [3, 5, 7, 1, 10, 75];
-let result = 2221;
+// let nums = [3, 5, 7, 1, 10, 75]; let result = 2221;
+// let nums = [3, 1, 8, 8, 10, 75]; let result = 977;
+let nums = [2, 2, 8, 8, 11, 34]; let result = 1183;
+
+
 let count = 0;
 
 nums.sort();
 
 let calcTrees = getAllCalcTrees(nums.length - 2);
+
 let allOperationSequences = [];
 for (let i = 1; i <= nums.length - 1; i++) {
     allOperationSequences[i - 1] = getAllOperationSequences(i);
@@ -385,7 +417,7 @@ for (let i = 0; i < calcTrees.length; i++) {
                         count++;
                         console.log(`${calcTree.toString()} = ${currCalc}`);
                     }
-                    if (count === 0 && Math.abs(result - bestMatch) > Math.abs(currCalc - bestMatch)) {
+                    if (count === 0 && Math.abs(result - bestMatch) > Math.abs(currCalc - result)) {
                         bestMatch = currCalc;
                         bestExpression = calcTree.toString();
                     }
