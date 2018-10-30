@@ -1,9 +1,9 @@
-let OP_PLUS = 0;
-let OP_MINUS = 1;
-let OP_MULT = 2;
-let OP_DIV = 3;
+const OP_PLUS = 0;
+const OP_MINUS = 1;
+const OP_MULT = 2;
+const OP_DIV = 3;
 
-let ALL_OPS = [OP_PLUS, OP_MINUS, OP_MULT, OP_DIV];
+const ALL_OPS = [OP_PLUS, OP_MINUS, OP_MULT, OP_DIV];
 
 
 class CalcNode {
@@ -156,6 +156,50 @@ class OperatorNode extends CalcNode {
         }
         return true;
     }
+
+    defineCalcTreeNumberPlaceholders() {
+        if (this.left === null) {
+            this.setLeft(new NumberNode());
+        } else {
+            this.left.defineCalcTreeNumberPlaceholders();
+        }
+        if (this.right === null) {
+            this.setRight(new NumberNode());
+        } else {
+            this.right.defineCalcTreeNumberPlaceholders();
+        }
+    }
+
+    getOperationNodes() {
+        let collectOperationNodes = (calcTree, collectedNodes) => {
+            if (calcTree !== null && !calcTree.isLeaf()) {
+                collectedNodes.push(calcTree);
+                collectOperationNodes(calcTree.left, collectedNodes);
+                collectOperationNodes(calcTree.right, collectedNodes);
+            }
+        };
+
+        let opNodes = [];
+        collectOperationNodes(this, opNodes);
+        return opNodes;
+    }
+
+    getNumberNodes () {
+        let collectNumberNodes = (calcTree, collectedNodes) => {
+            if (calcTree !== null) {
+                if (calcTree.isLeaf()) {
+                    collectedNodes.push(calcTree);
+                } else {
+                    collectNumberNodes(calcTree.left, collectedNodes);
+                    collectNumberNodes(calcTree.right, collectedNodes);
+                }
+            }
+        };
+
+        let opNodes = [];
+        collectNumberNodes(this, opNodes);
+        return opNodes;
+    }
 }
 
 
@@ -183,55 +227,6 @@ class NumberNode extends CalcNode {
 }
 
 
-let getOperationNodes = (calcTree) => {
-    let collectOperationNodes = (calcTree, collectedNodes) => {
-        if (calcTree !== null && !calcTree.isLeaf()) {
-            collectedNodes.push(calcTree);
-            collectOperationNodes(calcTree.left, collectedNodes);
-            collectOperationNodes(calcTree.right, collectedNodes);
-        }
-    };
-
-    let opNodes = [];
-    collectOperationNodes(calcTree, opNodes);
-    return opNodes;
-};
-
-
-let getNumberNodes = (calcTree) => {
-    let collectNumberNodes = (calcTree, collectedNodes) => {
-        if (calcTree !== null) {
-            if (calcTree.isLeaf()) {
-                collectedNodes.push(calcTree);
-            } else {
-                collectNumberNodes(calcTree.left, collectedNodes);
-                collectNumberNodes(calcTree.right, collectedNodes);
-            }
-        }
-    };
-
-    let opNodes = [];
-    collectNumberNodes(calcTree, opNodes);
-    return opNodes;
-};
-
-
-let defineCalcTreeNumberPlaceholders = (calcTree) => {
-    if (calcTree !== null && !calcTree.isLeaf()) {
-        if (calcTree.left === null) {
-            calcTree.setLeft(new NumberNode());
-        } else {
-            defineCalcTreeNumberPlaceholders(calcTree.left);
-        }
-        if (calcTree.right === null) {
-            calcTree.setRight(new NumberNode());
-        } else {
-            defineCalcTreeNumberPlaceholders(calcTree.right);
-        }
-    }
-};
-
-
 let createCalcTree = (nodes) => {
     let rootNode = null;
     for (let i = 0; i < nodes.length; i++) {
@@ -255,7 +250,7 @@ let createCalcTree = (nodes) => {
             }
         }
     }
-    defineCalcTreeNumberPlaceholders(rootNode);
+    rootNode.defineCalcTreeNumberPlaceholders();
     return rootNode;
 };
 
@@ -363,9 +358,9 @@ let areOperationsValid = (opNodes) => {
 let startTime = Date.now();
 
 // let nums = [3, 5, 7, 1, 10, 75]; let result = 8;
-// let nums = [3, 5, 7, 1, 10, 75]; let result = 976;
+let nums = [3, 5, 7, 1, 10, 75]; let result = 1024;
 // let nums = [3, 1, 8, 8, 10, 75]; let result = 977;
-let nums = [2, 2, 8, 8, 11, 34]; let result = 1183;
+// let nums = [2, 2, 8, 8, 11, 34]; let result = 1183;
 
 
 let count = 0;
@@ -384,8 +379,8 @@ for (let opCount = 0; opCount <= nums.length - 2; opCount++) {
 
     for (let i = 0; i < expressions.length; i++) {
         let expression = expressions[i];
-        let opNodes = getOperationNodes(expression);
-        let numNodes = getNumberNodes(expression);
+        let opNodes = expression.getOperationNodes();
+        let numNodes = expression.getNumberNodes();
 
         for (let j = 0; j < opSequences.length; j++) {
             setOperations(opNodes, opSequences[j]);
