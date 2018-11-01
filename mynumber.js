@@ -147,16 +147,8 @@ class OperatorNode extends CalcNode {
     isNotDuplicate() {
         if ((this.operator === OP_PLUS || this.operator === OP_MULT) && this.left.isLeaf()) {
             return this.right.isLeaf();
-        } else if (this.operator === OP_PLUS && this.right.operator === OP_PLUS && this.right.left.isLeaf() && this.right.right.isLeaf()) {
+        } else if (!this.right.isLeaf() && this.getOpPrecedence() === this.right.getOpPrecedence()) {
             return false;
-        } else if (this.operator === OP_MULT && this.right.operator === OP_MULT && this.right.left.isLeaf() && this.right.right.isLeaf()) {
-            return false;
-        } else if (this.operator === OP_MINUS) {    // "A - (a +- b)" is covered with other expression, "A - a -/+ b"
-            let rightPrecedence = this.right.getStrength();
-            return rightPrecedence >= OP_MULT;
-        } else if (this.operator === OP_DIV) {      // "A / (a */ b)" is covered with "A / a /* b"
-            let rightPrecedence = this.right.getStrength();
-            return rightPrecedence !== OP_MULT && rightPrecedence !== OP_DIV;
         }
         return true;
     }
@@ -362,8 +354,8 @@ let areOperationsValid = (opNodes) => {
 let startTime = Date.now();
 
 // let nums = [3, 5, 7, 1, 10, 75]; let result = 8;
-let nums = [3, 5, 7, 1, 10, 75]; let result = 1024;
-// let nums = [3, 1, 8, 8, 10, 75]; let result = 977;
+// let nums = [3, 5, 7, 1, 10, 75]; let result = 1024;
+let nums = [3, 1, 8, 8, 10, 75]; let result = 977;
 // let nums = [2, 2, 8, 8, 11, 34]; let result = 1183;
 
 
