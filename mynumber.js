@@ -35,7 +35,7 @@ class CalcNode {
     toString() {
     }
 
-    isValid() {
+    isNotDuplicate() {
         return true;
     }
 }
@@ -144,13 +144,17 @@ class OperatorNode extends CalcNode {
         }
     }
 
-    isValid() {
+    isNotDuplicate() {
         if ((this.operator === OP_PLUS || this.operator === OP_MULT) && this.left.isLeaf()) {
             return this.right.isLeaf();
-        } else if (this.operator === OP_MINUS) {
+        } else if (this.operator === OP_PLUS && this.right.operator === OP_PLUS && this.right.left.isLeaf() && this.right.right.isLeaf()) {
+            return false;
+        } else if (this.operator === OP_MULT && this.right.operator === OP_MULT && this.right.left.isLeaf() && this.right.right.isLeaf()) {
+            return false;
+        } else if (this.operator === OP_MINUS) {    // "A - (a +- b)" is covered with other expression, "A - a -/+ b"
             let rightPrecedence = this.right.getStrength();
             return rightPrecedence >= OP_MULT;
-        } else if (this.operator === OP_DIV) {
+        } else if (this.operator === OP_DIV) {      // "A / (a */ b)" is covered with "A / a /* b"
             let rightPrecedence = this.right.getStrength();
             return rightPrecedence !== OP_MULT && rightPrecedence !== OP_DIV;
         }
@@ -346,7 +350,7 @@ let getAllNumberSequences = (n, numbers) => {
 
 let areOperationsValid = (opNodes) => {
     for (let ii = 0; ii < opNodes.length; ii++) {      // eliminate some of duplicate expressions this way
-        if (!opNodes[ii].isValid()) {
+        if (!opNodes[ii].isNotDuplicate()) {
             return false;
         }
     }
