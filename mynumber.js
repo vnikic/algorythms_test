@@ -350,59 +350,62 @@ let areOperationsValid = (opNodes) => {
 };
 
 
-// TESTING
-let startTime = Date.now();
+let findMyNumber = (nums, result) => {
+    let startTime = Date.now();
 
-// let nums = [3, 5, 7, 1, 10, 75]; let result = 8;
-// let nums = [3, 5, 7, 1, 10, 75]; let result = 1024;
-let nums = [3, 1, 8, 8, 10, 75]; let result = 977;
-// let nums = [2, 2, 8, 8, 11, 34]; let result = 1183;
+    let count = 0;
 
+    nums.sort();
 
-let count = 0;
+    let bestMatch = -1;
+    let bestExpression = null;
 
-nums.sort();
+    for (let opCount = 0; opCount <= nums.length - 2; opCount++) {
+        let expressions = [];
+        createExpressions(opCount, [""], expressions);
+        let opSequences = getAllOperationSequences(opCount + 1);
+        let numSequences = getAllNumberSequences(opCount + 2, nums);
 
-let bestMatch = -1;
-let bestExpression = null;
+        for (let i = 0; i < expressions.length; i++) {
+            let expression = expressions[i];
+            let opNodes = expression.getOperationNodes();
+            let numNodes = expression.getNumberNodes();
 
-
-for (let opCount = 0; opCount <= nums.length - 2; opCount++) {
-    let expressions = [];
-    createExpressions(opCount, [""], expressions);
-    let opSequences = getAllOperationSequences(opCount + 1);
-    let numSequences = getAllNumberSequences(opCount + 2, nums);
-
-    for (let i = 0; i < expressions.length; i++) {
-        let expression = expressions[i];
-        let opNodes = expression.getOperationNodes();
-        let numNodes = expression.getNumberNodes();
-
-        for (let j = 0; j < opSequences.length; j++) {
-            setOperations(opNodes, opSequences[j]);
-            if (areOperationsValid(opNodes)) {
-                for (let k = 0; k < numSequences.length; k++) {
-                    setNumbers(numNodes, numSequences[k]);
-                    let currCalc = expression.calc();
-                    if (!isNaN(currCalc)) {
-                        if (currCalc === result) {
-                            count++;
-                            console.log(`${expression.toString()} = ${currCalc}`);
-                        }
-                        if (count === 0 && Math.abs(result - bestMatch) > Math.abs(currCalc - result)) {
-                            bestMatch = currCalc;
-                            bestExpression = expression.toString();
+            for (let j = 0; j < opSequences.length; j++) {
+                setOperations(opNodes, opSequences[j]);
+                if (areOperationsValid(opNodes)) {
+                    for (let k = 0; k < numSequences.length; k++) {
+                        setNumbers(numNodes, numSequences[k]);
+                        let currCalc = expression.calc();
+                        if (!isNaN(currCalc)) {
+                            if (currCalc === result) {
+                                count++;
+                                console.log(`${expression.toString()} = ${currCalc}`);
+                            }
+                            if (count === 0 && Math.abs(result - bestMatch) > Math.abs(currCalc - result)) {
+                                bestMatch = currCalc;
+                                bestExpression = expression.toString();
+                            }
                         }
                     }
                 }
             }
         }
     }
-}
+
+    if (count === 0) {
+        console.log(`Nearest match: ${bestExpression} = ${bestMatch}`);
+    }
+
+    console.log(`Number of expressions found: ${count}. Calculation done in ${Date.now() - startTime}ms`);
+};
 
 
-if (count === 0) {
-    console.log(`Nearest match: ${bestExpression} = ${bestMatch}`);
-}
 
-console.log(`Number of expressions found: ${count}. Calculation done in ${Date.now() - startTime}ms`);
+// TESTING
+
+// findMyNumber([3, 5, 7, 1, 10, 75], 8);
+findMyNumber([3, 5, 7, 1, 10, 75], 1024);
+// findMyNumber([3, 1, 8, 8, 10, 75], 977);
+// findMyNumber([2, 2, 8, 8, 11, 34], 1183);
+
