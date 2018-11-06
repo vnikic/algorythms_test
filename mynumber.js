@@ -38,12 +38,22 @@ class CalcNode {
     isNotDuplicate() {
         return true;
     }
+
+    getNodeCount() {
+        return 1;
+    }
+
+    getLevelCount() {
+        return 0;
+    }
 }
 
 
 class OperatorNode extends CalcNode {
     constructor() {
         super();
+        this.nodeCount = 1;
+        this.levelCount = 0;
     }
 
     setOperator(op) {
@@ -153,17 +163,29 @@ class OperatorNode extends CalcNode {
         return true;
     }
 
-    defineCalcTreeNumberPlaceholders() {
+    finishCalcTree() {
         if (this.left === null) {
             this.setLeft(new NumberNode());
         } else {
-            this.left.defineCalcTreeNumberPlaceholders();
+            this.left.finishCalcTree();
         }
         if (this.right === null) {
             this.setRight(new NumberNode());
         } else {
-            this.right.defineCalcTreeNumberPlaceholders();
+            this.right.finishCalcTree();
         }
+        this.nodeCount += this.left.getNodeCount();
+        this.nodeCount += this.right.getNodeCount();
+        this.levelCount = Math.max(this.left.getLevelCount(), this.right.getLevelCount()) + 1;
+    }
+
+
+    getNodeCount() {
+        return this.nodeCount;
+    }
+
+    getLevelCount() {
+        return this.levelCount;
     }
 
     getOperationNodes() {
@@ -246,7 +268,7 @@ let createCalcTree = (nodes) => {
             }
         }
     }
-    rootNode.defineCalcTreeNumberPlaceholders();
+    rootNode.finishCalcTree();
     return rootNode;
 };
 
@@ -340,9 +362,9 @@ let getAllNumberSequences = (n, numbers) => {
 };
 
 
-let areOperationsValid = (opNodes) => {
-    for (let ii = 0; ii < opNodes.length; ii++) {      // eliminate some of duplicate expressions this way
-        if (!opNodes[ii].isNotDuplicate()) {
+let operationsNotDuplicates = (opNodes) => {
+    for (let i = 0; i < opNodes.length; i++) {      // eliminate some of duplicate expressions this way
+        if (!opNodes[i].isNotDuplicate()) {
             return false;
         }
     }
@@ -373,7 +395,7 @@ let findMyNumber = (nums, result) => {
 
             for (let j = 0; j < opSequences.length; j++) {
                 setOperations(opNodes, opSequences[j]);
-                if (areOperationsValid(opNodes)) {
+                if (operationsNotDuplicates(opNodes)) {
                     for (let k = 0; k < numSequences.length; k++) {
                         setNumbers(numNodes, numSequences[k]);
                         let currCalc = expression.calc();
