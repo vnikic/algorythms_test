@@ -36,8 +36,41 @@ function variate(n, k, f) {
     }
 }
 
+
 function permute(n, f) {
     variate(n, n, f);
 }
 
-permute(4, p => console.log(p));
+
+let permuteRecursive = (n, doWithPerm) => {
+    let used = [];
+    let perm = [];
+    for (let i = 1; i <= n; i++) {
+        used.push(false);
+        perm.push(0);
+    }
+
+    let f = (k) => {
+        if (k < n) {
+            for (let i = 0; i < n; i++) {
+                if (!used[i]) {
+                    perm[k] = i;
+                    used[i] = true;
+                    f(k + 1);
+                    used[i] = false;
+                }
+            }
+        } else {
+            doWithPerm(perm);
+        }
+    };
+
+
+    f(0, perm, used);
+};
+
+
+// TEST
+
+// permute(4, p => console.log(p));
+permuteRecursive(4, perm => console.log(perm));
