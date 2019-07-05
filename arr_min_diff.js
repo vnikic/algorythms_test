@@ -7,7 +7,7 @@ Example for k = 3:
     16 20 29
     2 3 14 18 19 22 25 28
 
-Answer: 2 selected elements (27, 29, 28)
+Answer: 2, selected elements (27, 29, 28)
 **/
 
 let arrays = [
